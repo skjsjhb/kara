@@ -1,8 +1,8 @@
 import { WebSocket } from "ws";
-import { getEmitter } from "./Transmitter";
+import { closeWebSocketServer, getEmitter } from "./Transmitter";
 
 export interface IPCMainEvent {
-    id: string; // From ID
+    id: string;
     token: string;
     ws: WebSocket;
 }
@@ -41,5 +41,12 @@ export class IPCMain {
             IPCMain.self = new IPCMain();
         }
         return IPCMain.self;
+    }
+
+    /**
+     * Forward WebSocket server closing method.
+     */
+    closeSocket() {
+        closeWebSocketServer();
     }
 }

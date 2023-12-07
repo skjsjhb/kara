@@ -15,6 +15,7 @@ function karaRequire(mod: string): any {
         };
         return api;
     }
+    return undefined;
 }
 
 function setupAPIs() {

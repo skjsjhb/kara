@@ -20,9 +20,6 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
-  webview-nodejs:
-    specifier: ^0.2.4
-    version: 0.2.4
   ws:
     specifier: ^8.14.2
     version: 8.14.2
@@ -43,9 +40,6 @@ devDependencies:
   esbuild:
     specifier: ^0.19.8
     version: 0.19.8
-  esbuild-native-node-modules-plugin:
-    specifier: ^1.0.3
-    version: 1.0.3
   fs-extra:
     specifier: ^11.2.0
     version: 11.2.0
@@ -315,10 +309,6 @@ packages:
       ms: 2.1.2
     dev: true
 
-  /esbuild-native-node-modules-plugin@1.0.3:
-    resolution: {integrity: sha512-ri7isMRU/1tK2fpxv0/bUy5eyxzpL4ETaiXDmLU1xVTJtBII4YLzwWLvoDvphOCApbisvK/iF/mc/iIAsPvMbg==}
-    dev: true
-
   /esbuild@0.19.8:
     resolution: {integrity: sha512-l7iffQpT2OrZfH2rXIp7/FkmaeZM0vxbxN9KfiCwGYuZqzMg/JdvX26R31Zxn/Pxvsrg3Y9N6XTcnknqDyyv4w==}
     engines: {node: '>=12'}
@@ -380,11 +370,6 @@ packages:
     optionalDependencies:
       graceful-fs: 4.2.11
     dev: true
-
-  /koffi@2.6.11:
-    resolution: {integrity: sha512-8Kqa+7j7X8KoiI6uoz9p8X4un5sUpxThVENaiMm7sEe/NwkMaUuq+6n0rIxgF+m8qN42ycFlT0ox7TnFFNZUdQ==}
-    requiresBuild: true
-    dev: false
 
   /mime-db@1.33.0:
     resolution: {integrity: sha512-BHJ/EKruNIqJf/QahvxwQZXKygOQ256myeN/Ew+THcAa5q+PjyTTMMeNQC4DZw5AwfvelsUrA6B67NKMqXDbzQ==}
@@ -474,13 +459,6 @@ packages:
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
-    dev: false
-
-  /webview-nodejs@0.2.4:
-    resolution: {integrity: sha512-PSmz2GrETeZI+196jizQyoXc3+3p7ISREEBZzx7KSXqokzsrPBRsm1GZgvhG45uBsn6/qdjb4yfuzxZfcaMNIQ==}
-    engines: {node: '>=12.22.0'}
-    dependencies:
-      koffi: 2.6.11
     dev: false
 
   /ws@8.14.2:

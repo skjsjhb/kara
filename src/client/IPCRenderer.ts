@@ -28,8 +28,6 @@ export class IPCRenderer {
                 return;
             }
             const {channel, args} = JSON.parse(body);
-            console.log(channel);
-            console.log(args);
             this.emitter.emit(channel, ...args);
         };
     }

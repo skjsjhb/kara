@@ -1,12 +1,13 @@
 import { App } from "../App";
 import { IPCMain } from "../IPCMain";
+import * as Serve from "../Serve";
 
-export module app {
-    const app = App.get();
+export const app = App.get();
 
-    export function whenReady(): Promise<void> {
-        return app.whenReady();
-    }
-}
+export * from "../BrowserWindow";
 
 export const ipcMain = IPCMain.get();
+
+export module serve {
+    export const serveDir = Serve.serveDir;
+}

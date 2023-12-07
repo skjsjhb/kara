@@ -1,14 +1,8 @@
-/**
- * Represents a single webview window.
- *
- * Note that due to the limitation of webview APIs, a process can own only one window instance. Methods
- * of the windows are implemented using IPC.
- */
-
 import { spawn } from "child_process";
-import { EventEmitter } from "events";
 import { ChildProcess } from "node:child_process";
+import * as os from "os";
 import * as path from "path";
+import { TinyEmitter } from "tiny-emitter";
 import * as uuid from "uuid";
 import { App } from "./App";
 import { getWebSocket, getWebSocketPort, listen } from "./Transmitter";
@@ -17,7 +11,28 @@ export interface BrowserWindowOptions {
     debug?: boolean;
 }
 
-export class BrowserWindow {
+interface BrowserWindowWithEvents {
+    /**
+     * Fired when the WebSocket connection with expected ID is established. The window
+     * is ready for receiving IPC messages.
+     */
+    on(event: "ready", listener: () => any): void;
+
+    /**
+     * Fired when the WebSocket connection is lost, effectively the window has been closed. Fired after
+     * the process is terminated.
+     */
+    on(event: "close", listener: () => any): void;
+}
+
+
+/**
+ * Represents a single webview window.
+ *
+ * Note that due to the limitation of webview APIs, a process can own only one window instance. Methods
+ * of the windows are implemented using IPC.
+ */
+export class BrowserWindow implements BrowserWindowWithEvents {
     /**
      * Child process of this window.
      */
@@ -35,31 +50,36 @@ export class BrowserWindow {
     /**
      * Event emitter for window events.
      */
-    protected emitter: EventEmitter = new EventEmitter();
+    protected emitter = new TinyEmitter();
 
-    protected readyHooks: (() => void)[] = [];
-
+    /**
+     * Ready flag of the window.
+     */
     protected ready: boolean = false;
 
-    static instanceCount = 0;
+    static instances: Set<BrowserWindow> = new Set();
 
+    /**
+     * Creates a new browser window. The process spawn starts immediately and the WebSocket will
+     * try to connect as soon as the window is created.
+     *
+     * This kara uses karac as underlying vendor. karac will be responsible for creating window and inject
+     * scripts.
+     */
     constructor(options?: BrowserWindowOptions) {
-        BrowserWindow.instanceCount++;
+        BrowserWindow.instances.add(this);
         this.id = uuid.v4();
-        console.log("Creating window with id " + this.id);
         this.token = listen(this.id,
             () => {
                 this.ready = true;
-                this.readyHooks.forEach(f => f());
                 this.emitter.emit("ready");
             },
             () => {
-                console.log("Window is closing: " + this.id);
                 this.close();
                 this.emitter.emit("close");
             }
         );
-        this.proc = spawn(process.execPath, [path.join(__dirname, "client-bootloader.js")], {
+        this.proc = spawn(getKaracPath(), [], {
             env: {
                 KARA_DEBUG: options?.debug ? "1" : "0",
                 KARA_ID: this.id,
@@ -68,13 +88,11 @@ export class BrowserWindow {
             },
             detached: true
         });
-        console.log("Forked process " + this.proc.pid);
-        this.proc.stdout?.on("data", (d) => {
-            console.log(d.toString());
+        this.proc.stdout?.on("data", (data) => {
+            console.log(data.toString());
         });
-
-        this.proc.stderr?.on("data", (d) => {
-            console.log(d.toString());
+        this.proc.stderr?.on("data", (data) => {
+            console.log(data.toString());
         });
     }
 
@@ -82,7 +100,6 @@ export class BrowserWindow {
     on = this.emitter.on.bind(this.emitter);
     off = this.emitter.off.bind(this.emitter);
     once = this.emitter.once.bind(this.emitter);
-    removeAllListeners = this.emitter.removeAllListeners.bind(this.emitter);
 
     /**
      * Gets a Promise which resolves when the corresponding WS connection is established.
@@ -92,21 +109,31 @@ export class BrowserWindow {
             return Promise.resolve();
         }
         return new Promise(res => {
-            this.readyHooks.push(res);
+            this.once("ready", res);
         });
     }
 
     /**
      * Gets the identifier of this window.
      */
-    getId() {
+    getId(): string {
         return this.id;
     }
 
+    /**
+     * Gets the renderer process.
+     */
+    getProcess(): ChildProcess | null {
+        return this.proc;
+    }
+
+    /**
+     * Send a system level IPC message to remote. Used for native method calling.
+     */
     protected sysCall(method: string, ...args: any[]) {
         const ws = getWebSocket(this.id);
         if (!ws) {
-            console.log("WebSocket for " + this.id + " is not established. Skipped request.");
+            console.warn("Premature IPC call: " + this.id + " (" + method + ")");
             return;
         }
         ws.send(JSON.stringify({
@@ -118,47 +145,80 @@ export class BrowserWindow {
 
     /**
      * Trys to close the window using SIGINT to terminate the process.
+     *
+     * Browser windows run in dedicated processes and are NOT automatically closed when the app exits. It's
+     * the caller's responsibility to close the window.
      */
     close(): void {
-        BrowserWindow.instanceCount--;
+        BrowserWindow.instances.delete(this);
         this.sysCall("stop");
         this.proc.kill();
-        if (BrowserWindow.instanceCount == 0) {
+        if (BrowserWindow.instances.size == 0) {
             App.get().emit("all-window-closed");
         }
     }
 
+    /**
+     * Sets the title of the window. Unlike Electron, titles are not set automatically when
+     * the page navigates but requires an explicit call.
+     */
     setTitle(t: string): void {
         this.sysCall("setTitle", t);
     }
 
+
+    /**
+     * Sets the HTML content of the window.
+     *
+     * Note that setting HTML content also triggers navigation (i.e. WebSocket re-connection). This method
+     * does not resolve links in the HTML file and, due to the limitation of webview, `file://` urls are not
+     * supported by default and external scripts will likely not to get loaded.
+     */
     setHTML(s: string): void {
         this.ready = false;
         this.sysCall("setHTML", s);
     }
 
+    /**
+     * Sets the size of the window.
+     */
     setSize(w: number, h: number): void {
         this.sysCall("setSize", w, h);
     }
 
+    /**
+     * Starts navigating to the specified URL.
+     */
     navigate(url: string): void {
         this.ready = false;
         this.sysCall("navigate", url);
     }
 
+    /**
+     * Navigates to a URL and wait for the window to be ready. Effectively `loadURL()` in Electron.
+     */
     loadURL(url: string): Promise<void> {
         this.navigate(url);
         return this.whenReady();
     }
 
+    /**
+     * Reload the window.
+     */
     reload(): void {
         this.eval("location.reload()");
     }
 
+    /**
+     * Sends an application level IPC message with channel and arguments to this window.
+     *
+     * The message will only be sent when the window is ready, otherwise it's discarded.
+     *
+     * The message sent can be captured using `ipcRenderer.on(channel, args)`.
+     */
     send(channel: string, ...args: any[]) {
         const ws = getWebSocket(this.id);
         if (!ws) {
-            console.log("WebSocket for " + this.id + " is not established. Skipped request.");
             return;
         }
         ws.send(JSON.stringify({
@@ -168,8 +228,15 @@ export class BrowserWindow {
         }));
     }
 
+    /**
+     * Executes script in the window.
+     */
     eval(s: string): void {
         this.sysCall("eval", s);
     }
 }
 
+function getKaracPath(): string {
+    const rootDir = process.env["KARAC_PATH"] || __dirname;
+    return path.resolve(rootDir, os.platform() == "win32" ? "karac.exe" : "karac");
+}

@@ -1,22 +1,28 @@
 import * as esbuild from 'esbuild';
-import { nativeNodeModulesPlugin } from "esbuild-native-node-modules-plugin";
-import { copy } from "fs-extra";
+import { existsSync } from "node:fs";
+import * as os from "os";
+
+const checkFiles = [
+    os.platform() === "win32" ? "build/karac.exe" : "build/karac",
+    "build/kara-loader.js"
+];
+
+if (!checkFiles.every(existsSync)) {
+    console.log("You're missing files for build. Please check the build instruction.");
+}
 
 await esbuild.build({
-    entryPoints: ['src/client/ClientBootLoader.ts'],
+    entryPoints: ['src/client/ClientAPI.ts'],
     bundle: true,
-    platform: "node",
-    outfile: 'build/client-bootloader.js',
-    plugins: [
-        nativeNodeModulesPlugin
-    ]
+    platform: "browser",
+    minify: true,
+    outfile: 'build/client.js'
 });
 
 await esbuild.build({
     entryPoints: ['src/Main.ts'],
     bundle: true,
     platform: "node",
+    minify: true,
     outfile: 'build/main.js'
 });
-
-await copy("node_modules/webview-nodejs/dist/libs", "build/libs");

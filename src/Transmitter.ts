@@ -25,11 +25,9 @@ interface WebSocketRequest {
 }
 
 export async function setupWebSocket() {
-    console.log("Setting up IPC WebSocket channels.");
     wsPort = await getPort();
     wsHost = new WebSocketServer({port: wsPort});
     wsHost.on("connection", (ws) => {
-        console.log("New WS connection established.");
         ws.on("message", (data) => {
             try {
                 const {id, token, body}: WebSocketRequest = JSON.parse(data.toString());
@@ -42,14 +40,11 @@ export async function setupWebSocket() {
                 }
                 if (body == "_WS_REG_") {
                     // Magic literal for register
-                    console.log("Established WS connection: " + id);
                     wsMap.set(id, ws);
 
                     clearTimeout(wsAliveMap.get(id));
                     ws.on("close", () => {
-                        console.log("Connection closed, waiting for re-establish: " + id);
                         wsAliveMap.set(id, setTimeout(() => {
-                            console.log("Connection lost: " + id);
                             proc.onclose();
                         }, 200));
                     });

@@ -25,7 +25,6 @@ interface BrowserWindowWithEvents {
     on(event: "close", listener: () => any): void;
 }
 
-
 /**
  * Represents a single webview window.
  *
@@ -144,10 +143,8 @@ export class BrowserWindow implements BrowserWindowWithEvents {
     }
 
     /**
-     * Trys to close the window using SIGINT to terminate the process.
-     *
-     * Browser windows run in dedicated processes and are NOT automatically closed when the app exits. It's
-     * the caller's responsibility to close the window.
+     * Tries to close the window using SIGINT to terminate the process. Unclosed windows will be closed
+     * when the main process exits.
      */
     close(): void {
         BrowserWindow.instances.delete(this);
@@ -234,7 +231,19 @@ export class BrowserWindow implements BrowserWindowWithEvents {
     eval(s: string): void {
         this.sysCall("eval", s);
     }
+
+    /**
+     * Tries to close all windows.
+     */
+    static closeAll(): void {
+        BrowserWindow.instances.forEach(w => w.close());
+    }
 }
+
+// Close all before exits
+process.on("exit", BrowserWindow.closeAll);
+process.on("beforeExit", BrowserWindow.closeAll);
+process.on("SIGINT", BrowserWindow.closeAll);
 
 function getKaracPath(): string {
     const rootDir = process.env["KARAC_PATH"] || __dirname;

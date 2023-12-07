@@ -5,6 +5,7 @@ import * as path from "path";
 import { TinyEmitter } from "tiny-emitter";
 import * as uuid from "uuid";
 import { App } from "./App";
+import { getAppConfig } from "./AppConfig";
 import { getWebSocket, getWebSocketPort, listen } from "./Transmitter";
 
 export interface BrowserWindowOptions {
@@ -80,6 +81,7 @@ export class BrowserWindow implements BrowserWindowWithEvents {
         );
         this.proc = spawn(getKaracPath(), [], {
             env: {
+                KARAC_LOADER: getAppConfig().loader || undefined,
                 KARA_DEBUG: options?.debug ? "1" : "0",
                 KARA_ID: this.id,
                 KARA_WS_PORT: getWebSocketPort().toString(),
@@ -246,6 +248,9 @@ process.on("beforeExit", BrowserWindow.closeAll);
 process.on("SIGINT", BrowserWindow.closeAll);
 
 function getKaracPath(): string {
-    const rootDir = process.env["KARAC_PATH"] || __dirname;
-    return path.resolve(rootDir, os.platform() == "win32" ? "karac.exe" : "karac");
+    let pt = getAppConfig().karac;
+    if (pt) {
+        return path.resolve(pt);
+    }
+    return path.resolve(os.platform() == "win32" ? "karac.exe" : "karac");
 }

@@ -1,18 +1,27 @@
 {
-  "name": "kara",
-  "private": true,
-  "version": "1.0.0",
+  "name": "@skjsjhb/kara",
+  "main": "main.ts",
+  "version": "0.1.0",
   "exports": [
-    "./main.ts",
-    "./renderer.ts"
+    "./main.ts"
   ],
   "description": "UI in browser.",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "makebin": "cd build && npx pkg -t node18 main.js -o kara.exe",
+    "binary:windows": "cd build && zip kara.zip client.js karac.exe kara.exe",
+    "binary:unix": "cd build && tar -zcf kara.tar.gz client.js karac kara"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [],
   "author": "skjsjhb",
   "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skjsjhb/kara.git"
+  },
   "dependencies": {
     "get-port": "^7.0.0",
     "nanoid": "^5.0.4",
@@ -22,12 +31,14 @@
     "ws": "^8.14.2"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.3",
     "@types/serve-handler": "^6.1.4",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
     "esbuild": "^0.19.8",
     "fs-extra": "^11.2.0",
+    "pkg": "^5.8.1",
     "typescript": "^5.3.3",
     "upx": "^1.0.6"
   }

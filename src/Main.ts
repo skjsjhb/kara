@@ -1,16 +1,17 @@
-import { readFile } from "fs/promises";
+import { readFile } from "fs-extra";
+import path from "node:path";
 import * as KaraMain from "./api/KaraMain";
+import { getAppConfig, readAppConfig } from "./AppConfig";
 
 /**
  * Main loader for Kara when being called directly (not as a library).
  */
 export async function main() {
-    const entry = process.argv[process.argv.length - 1];
-    if (!entry || entry == process.execPath) {
-        console.error("Invalid script entry. Please specify the entry script.");
-        process.exit(1);
-    }
-    const src = await readFile(entry);
+    const entry = path.resolve(process.argv[process.argv.length - 1] || ".");
+    await readAppConfig(entry);
+    process.chdir(entry);
+    const src = await readFile(getAppConfig().main);
+
     const nodeRequire = require;
     // @ts-ignore
     globalThis.require = (mod: string) => {

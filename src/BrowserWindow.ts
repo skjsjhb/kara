@@ -165,6 +165,26 @@ export class BrowserWindow implements BrowserWindowWithEvents {
         this.sysCall("setTitle", t);
     }
 
+    /**
+     * Toggles the frame status of the window. Identical to `frame` option in Electron but can be called during runtime.
+     *
+     * @supported Windows, Linux
+     */
+    setFrame(f: boolean): void {
+        this.sysCall("setFrame", f);
+    }
+
+    /**
+     * Opens DevTools.
+     *
+     * Note that DevTools can still be manually opened on all platforms if debug flag is set without
+     * the necessity of calling this method.
+     *
+     * @supported Windows, Linux
+     */
+    openDevTools(): void {
+        this.sysCall("openDevTools");
+    }
 
     /**
      * Sets the HTML content of the window.

@@ -1,6 +1,9 @@
 {
   "name": "@skjsjhb/kara",
   "main": "main.ts",
+  "bin": {
+    "kara": "bin/kara.js"
+  },
   "version": "0.1.0",
   "exports": [
     "./main.ts"
@@ -38,6 +41,8 @@
     "@types/ws": "^8.5.10",
     "esbuild": "^0.19.8",
     "fs-extra": "^11.2.0",
+    "global-agent": "^3.0.0",
+    "node-fetch": "^3.3.2",
     "pkg": "^5.8.1",
     "typescript": "^5.3.3",
     "upx": "^1.0.6"

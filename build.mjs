@@ -3,8 +3,7 @@ import { existsSync } from "node:fs";
 import * as os from "os";
 
 const checkFiles = [
-    os.platform() === "win32" ? "build/karac.exe" : "build/karac",
-    "build/kara-loader.js"
+    os.platform() === "win32" ? "build/karac.exe" : "build/karac"
 ];
 
 if (!checkFiles.every(existsSync)) {

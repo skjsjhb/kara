@@ -25,3 +25,11 @@ await esbuild.build({
     minify: true,
     outfile: 'build/main.js'
 });
+
+await esbuild.build({
+    entryPoints: ['src/Main.ts'],
+    bundle: true,
+    platform: "node",
+    minify: true,
+    outfile: 'dist/main.js'
+});

@@ -7,7 +7,7 @@ import path from "node:path";
 import { pipeline } from "node:stream/promises";
 
 const agent = createGlobalProxyAgent();
-const karacVersion = "alpha";
+const karacVersion = "beta";
 const suffix = os.platform() + "-" + os.arch() + (os.platform() === "win32" ? ".exe" : "");
 const karacUrl = `https://github.com/skjsjhb/karac/releases/download/${karacVersion}/karac-${suffix}`;
 console.log("Downloading " + karacUrl);

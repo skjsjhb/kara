@@ -1,4 +1,8 @@
 import { TinyEmitter } from "tiny-emitter";
+import pkg from "../package.json";
+import { BrowserWindow } from "./BrowserWindow";
+import { IPCMain } from "./IPCMain";
+import { closeServeHandlers } from "./Serve";
 import { setupWebSocket } from "./Transmitter";
 
 export async function setupApp() {
@@ -44,6 +48,29 @@ export class App implements AppWithEvents {
         return new Promise(res => {
             this.on("ready", res);
         });
+    }
+
+    /**
+     * Gets kara version.
+     */
+    getVersion(): string {
+        return pkg.version;
+    }
+
+    /**
+     * Cleanup resources and exit.
+     */
+    quit(): void {
+        BrowserWindow.closeAll();
+        IPCMain.get().closeSocket();
+        closeServeHandlers();
+    }
+
+    /**
+     * Exit immediately with an optional exit code.
+     */
+    exit(code?: number): void {
+        process.exit(code);
     }
 
     static get(): App {

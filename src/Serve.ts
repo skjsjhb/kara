@@ -7,6 +7,8 @@ export interface ServeHandler {
     server: http.Server;
 }
 
+const handlers: Set<ServeHandler> = new Set();
+
 /**
  * Serve a directory.
  */
@@ -19,9 +21,21 @@ export async function serveDir(dest: string): Promise<ServeHandler> {
     return new Promise(async (res) => {
         const port = await getPort();
         server.listen(port, () => {
-            res({
+            const h = {
                 port, server
+            };
+
+            // Index for closing
+            handlers.add(h);
+            h.server.on("close", () => {
+                handlers.delete(h);
             });
+
+            res(h);
         });
     });
+}
+
+export function closeServeHandlers(): void {
+    handlers.forEach(h => h.server.close());
 }

@@ -88,8 +88,7 @@ export class BrowserWindow implements BrowserWindowWithEvents {
                 KARA_ID: this.id,
                 KARA_WS_PORT: getWebSocketPort().toString(),
                 KARA_WS_TOKEN: this.token
-            },
-            detached: true
+            }
         });
         this.proc.stdout?.on("data", (data) => {
             console.log(data.toString());
@@ -282,11 +281,6 @@ export class BrowserWindow implements BrowserWindowWithEvents {
         BrowserWindow.instances.forEach(w => w.close());
     }
 }
-
-// Close all before exits
-process.on("exit", BrowserWindow.closeAll);
-process.on("beforeExit", BrowserWindow.closeAll);
-process.on("SIGINT", BrowserWindow.closeAll);
 
 function getKaracPath(): string {
     let pt = getAppConfig().karac;

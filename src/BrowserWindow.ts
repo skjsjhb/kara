@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { nanoid } from "nanoid";
 import { ChildProcess } from "node:child_process";
 import * as os from "os";
 import * as path from "path";
@@ -6,6 +7,7 @@ import { TinyEmitter } from "tiny-emitter";
 import * as uuid from "uuid";
 import { App } from "./App";
 import { getAppConfig } from "./AppConfig";
+import { IPCMain } from "./IPCMain";
 import { getWebSocket, getWebSocketPort, listen } from "./Transmitter";
 
 export interface BrowserWindowOptions {
@@ -81,7 +83,7 @@ export class BrowserWindow implements BrowserWindowWithEvents {
         );
         this.proc = spawn(getKaracPath(), [], {
             env: {
-                KARAC_LOADER: getAppConfig().loader || undefined,
+                KARA_LOADER_PATH: getAppConfig().loader,
                 KARA_DEBUG: options?.debug ? "1" : "0",
                 KARA_ID: this.id,
                 KARA_WS_PORT: getWebSocketPort().toString(),
@@ -168,7 +170,7 @@ export class BrowserWindow implements BrowserWindowWithEvents {
     /**
      * Toggles the frame status of the window. Identical to `frame` option in Electron but can be called during runtime.
      *
-     * @supported Windows, Linux
+     * Stability needs to be verified for macOS and Linux.
      */
     setFrame(f: boolean): void {
         this.sysCall("setFrame", f);
@@ -222,11 +224,30 @@ export class BrowserWindow implements BrowserWindowWithEvents {
     }
 
     /**
+     * Gets `location.href`
+     */
+    getURL(): Promise<string> {
+        const eid = nanoid();
+        this.send("_getURL", eid);
+        return new Promise((res) => {
+            const f = (_e: never, eid0: string, url: string) => {
+                if (eid0 == eid) {
+                    IPCMain.get().off("_getURL", f);
+                    res(url);
+                }
+            };
+            IPCMain.get().on("_getURL", f);
+        });
+
+    }
+
+    /**
      * Reload the window.
      */
     reload(): void {
         this.eval("location.reload()");
     }
+
 
     /**
      * Sends an application level IPC message with channel and arguments to this window.

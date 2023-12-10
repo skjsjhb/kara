@@ -1,15 +1,18 @@
 {
   "name": "@skjsjhb/kara",
-  "main": "main.ts",
+  "main": "kara.d.ts",
   "bin": {
     "kara": "bin/kara.js"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "exports": [
-    "./main.ts"
+    "./kara.d.ts",
+    "./remote.d.ts"
   ],
   "description": "UI in browser.",
   "scripts": {
+    "prepublish": "pnpm build",
+    "install": "node setup.mjs",
     "build": "node build.mjs",
     "makebin": "cd build && npx pkg -t node18 main.js -o kara.exe",
     "binary:windows": "cd build && tar.exe -acf kara.zip client.js karac.exe kara.exe",

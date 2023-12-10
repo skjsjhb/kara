@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { closeWebSocketServer, getEmitter } from "./Transmitter";
+import { closeWebSocketServer, getMessageEmitter } from "./Transmitter";
 
 export interface IPCMainEvent {
     id: string;
@@ -8,12 +8,13 @@ export interface IPCMainEvent {
 }
 
 export class IPCMain {
-    protected emitter = getEmitter();
+    protected emitter = getMessageEmitter();
 
     static self: IPCMain;
 
     on = this.emitter.on.bind(this.emitter);
     once = this.emitter.once.bind(this.emitter);
+    off = this.emitter.off.bind(this.emitter);
 
     handle(method: string, handler: (...args: any[]) => Promise<any>) {
         this.emitter.on(method, async (e: IPCMainEvent, eid: string, ...args: any[]) => {
@@ -35,6 +36,7 @@ export class IPCMain {
             }));
         });
     }
+
 
     static get(): IPCMain {
         if (!IPCMain.self) {

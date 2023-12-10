@@ -1,3 +1,7 @@
+/**
+ * WebSocket based IPC protocol.
+ */
+
 import crypto from "crypto";
 import getPort from "get-port";
 import { TinyEmitter } from "tiny-emitter";
@@ -27,6 +31,9 @@ interface WebSocketRequest {
 export async function setupWebSocket() {
     wsPort = await getPort();
     wsHost = new WebSocketServer({port: wsPort});
+    wsHost.on("error", (e) => {
+        console.warn("Error in WebSocket server: " + e);
+    });
     wsHost.on("connection", (ws) => {
         ws.on("message", (data) => {
             try {
@@ -97,7 +104,7 @@ export function getWebSocket(id: string): WebSocket | null {
     return wsMap.get(id) ?? null;
 }
 
-export function getEmitter(): TinyEmitter {
+export function getMessageEmitter(): TinyEmitter {
     return emitter;
 }
 

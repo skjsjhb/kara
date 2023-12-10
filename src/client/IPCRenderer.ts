@@ -7,6 +7,8 @@ export class IPCRenderer {
     protected ws: WebSocket;
     protected emitter = new TinyEmitter();
 
+    ready = false;
+
     static self: IPCRenderer;
 
     constructor() {
@@ -16,6 +18,14 @@ export class IPCRenderer {
         this.token = window["_KARA_WS_TOKEN_"];
         // @ts-ignore
         this.ws = window["_KARA_WS_"];
+
+        if (this.ws.readyState == WebSocket.OPEN) {
+            this.ready = true;
+        } else {
+            this.ws.addEventListener("open", () => {
+                this.ready = true;
+            });
+        }
 
         // Add application listeners
         const original = this.ws.onmessage?.bind(this.ws);
@@ -32,14 +42,29 @@ export class IPCRenderer {
         };
     }
 
+    whenReady(): Promise<void> {
+        if (this.ready) {
+            return Promise.resolve();
+        }
+        return new Promise(res => {
+            this.ws.addEventListener("open", () => {
+                res();
+            });
+        });
+
+    }
+
     send(channel: string, ...args: any[]): void {
-        this.ws.send(JSON.stringify({
-            id: this.id,
-            token: this.token,
-            body: JSON.stringify({
-                channel, args
-            })
-        }));
+        (async () => {
+            await this.whenReady(); // Make sure connection is established
+            this.ws.send(JSON.stringify({
+                id: this.id,
+                token: this.token,
+                body: JSON.stringify({
+                    channel, args
+                })
+            }));
+        })();
     }
 
     invoke(method: string, ...args: any[]): Promise<any> {

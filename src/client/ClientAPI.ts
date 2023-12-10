@@ -21,6 +21,9 @@ function karaRequire(mod: string): any {
 function setupAPIs() {
     Object.defineProperty(window, "require", {value: karaRequire});
     Object.defineProperty(window, "ipcRenderer", {value: IPCRenderer.get()});
+    IPCRenderer.get().on("_getURL", (eid: string) => {
+        IPCRenderer.get().send("_getURL", eid, location.href);
+    });
 }
 
 void setupAPIs();

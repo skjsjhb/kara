@@ -22,7 +22,9 @@ So here comes the summary:
 
 ## Example
 
-Below shows a minimal "hello, world" example covering basic concepts.
+### Basic Example
+
+Below shows a minimal "hello, world" example covering basic concepts. Note we're not using any Node.js tools here! Everything are just plain files. In more complexed projects, you might use build tools and other frameworks, but just keep in mind that kara only executes your entry script, without any magic.
 
 1. Gets the latest release from the release page. Download and decompress it and you shall see `kara` (`kara.exe`) in the root directory.
 
@@ -56,7 +58,8 @@ Below shows a minimal "hello, world" example covering basic concepts.
    {
      "main": "example.js",
      "name": "org.example.hello-world",
-     "version": "1.0.0"
+     "version": "1.0.0",
+     "loader": "client.js"
    }
    ```
    
@@ -83,8 +86,6 @@ Below shows a minimal "hello, world" example covering basic concepts.
    <html lang="en">
    <head>
        <meta charset="UTF-8">
-       <!-- Bundled client API script for easier IPC messaging -->
-       <script src="./client.js"></script>
        <link rel="stylesheet" type="text/css" href="./styles.css"/>
    </head>
    <body>
@@ -108,6 +109,42 @@ Below shows a minimal "hello, world" example covering basic concepts.
    ```
    
    You should see `Hello (Your Name)` appears on the screen.
+
+### Use As a Package
+
+kara, or say `@skjsjhb/kara`, is published on GitHub rather than the npm registry. You do not need to become a maintainer to use them, but you'll want to authenticate with GitHub npm registry as described in [Working with the npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry). Then, add the following to your project root:
+
+For yarn (v2 and above):
+
+```yml
+npmScopes: 
+  skjsjhb: 
+    npmRegistryServer: https://npm.pkg.github.com
+```
+
+For yarn v1, pnpm and npm:
+
+```ini
+@skjsjhb:registry=https://npm.pkg.github.com
+```
+
+And add your token to `~/.npmrc` or `~/.yarnrc`.
+
+Then you'll be able to install kara as a package.
+
+```shell
+npm install @skjsjhb/kara --save-dev # npm
+yarn add @skjsjhb/kara --dev # yarn
+pnpm add @skjsjhb/kara --save-dev # pnpm
+```
+
+Now, write your code and generate them as regular. Put all your files together and add an `app-config.json` as described above. Note that you need to copy `node_modules/@skjsjhb/kara/dist/client.js` to the same directory your `app-config.json` is located in. After this, run:
+
+```shell
+npx kara <Path/To/Directory/With/AppConfig>
+```
+
+Your app should launch if prebuilt karac binaries are present.
 
 ## Trivias
 

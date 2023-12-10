@@ -5,7 +5,7 @@ export interface AppConfig {
     id: string; // Unique name
     version: string; // App version
     main: string; // Entry script
-    loader?: string; // Path to custom karac loader
+    loader: string; // Path to custom karac loader, default client.js
     debug?: boolean; // Enable debug mode
     karac?: string; // Path to karac binary
 }
@@ -20,13 +20,6 @@ export async function readAppConfig(dir: string) {
     } catch (e) {
         throw "Could not load app config: " + e;
     }
-}
-
-function resolve(s: string | undefined, dir: string) {
-    if (!s) {
-        return undefined;
-    }
-    return path.resolve(dir, s);
 }
 
 export function getAppConfig() {

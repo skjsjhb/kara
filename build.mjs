@@ -33,3 +33,11 @@ await esbuild.build({
     minify: true,
     outfile: 'dist/main.js'
 });
+
+await esbuild.build({
+    entryPoints: ['src/client/ClientAPI.ts'],
+    bundle: true,
+    platform: "browser",
+    minify: true,
+    outfile: 'dist/client.js'
+});

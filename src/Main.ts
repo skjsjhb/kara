@@ -7,9 +7,14 @@ import { getAppConfig, readAppConfig } from "./AppConfig";
  * Main loader for Kara when being called directly (not as a library).
  */
 export async function main() {
-    const entry = path.resolve(process.argv[process.argv.length - 1] || ".");
-    await readAppConfig(entry);
+    let entry;
+    if (process.argv0 == process.argv[process.argv.length - 1]) {
+        entry = path.resolve(".");
+    } else {
+        entry = path.resolve(process.argv[process.argv.length - 1] || ".");
+    }
     process.chdir(entry);
+    await readAppConfig(entry);
     const src = await readFile(getAppConfig().main);
 
     const nodeRequire = require;

@@ -14,7 +14,6 @@ await esbuild.build({
     entryPoints: ['src/client/ClientAPI.ts'],
     bundle: true,
     platform: "browser",
-    minify: true,
     outfile: 'build/client.js'
 });
 
@@ -22,7 +21,6 @@ await esbuild.build({
     entryPoints: ['src/Main.ts'],
     bundle: true,
     platform: "node",
-    minify: true,
     outfile: 'build/main.js'
 });
 

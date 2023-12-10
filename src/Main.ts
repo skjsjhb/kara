@@ -1,5 +1,6 @@
 import { readFile } from "fs-extra";
 import path from "node:path";
+import * as vm from "vm";
 import * as KaraMain from "./api/KaraMain";
 import { getAppConfig, readAppConfig } from "./AppConfig";
 
@@ -15,7 +16,8 @@ export async function main() {
     }
     process.chdir(entry);
     await readAppConfig(entry);
-    const src = await readFile(getAppConfig().main);
+    const filename = getAppConfig().main;
+    const src = await readFile(filename);
 
     const nodeRequire = require;
     // @ts-ignore
@@ -26,7 +28,7 @@ export async function main() {
             return nodeRequire(mod);
         }
     };
-    globalThis.eval(src.toString());
+    vm.runInThisContext(src.toString(), {filename});
 }
 
 void main();

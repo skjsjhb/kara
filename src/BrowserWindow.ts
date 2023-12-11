@@ -169,7 +169,7 @@ export class BrowserWindow implements BrowserWindowWithEvents {
     /**
      * Toggles the frame status of the window. Identical to `frame` option in Electron but can be called during runtime.
      *
-     * Stability needs to be verified for macOS and Linux.
+     * @supported Windows, Linux
      */
     setFrame(f: boolean): void {
         this.sysCall("setFrame", f);

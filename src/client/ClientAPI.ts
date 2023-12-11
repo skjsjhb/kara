@@ -2,6 +2,7 @@
  * Runs in the browser environment, providing window features.
  */
 import { IPCRenderer } from "./IPCRenderer";
+import { scaleWindowSize } from "./Screen";
 
 
 interface KaraAPIs {
@@ -9,7 +10,7 @@ interface KaraAPIs {
 }
 
 function karaRequire(mod: string): any {
-    if (mod == "kara") {
+    if (mod == "kara" || mod == "kara/remote") {
         const api: KaraAPIs = {
             ipcRenderer: IPCRenderer.get()
         };
@@ -24,6 +25,7 @@ function setupAPIs() {
     IPCRenderer.get().on("_getURL", (eid: string) => {
         IPCRenderer.get().send("_getURL", eid, location.href);
     });
+    scaleWindowSize();
 }
 
 void setupAPIs();
